@@ -1,219 +1,127 @@
 ## DebugIQ – AI-Powered Simulation Log Intelligence
 
-DebugIQ is an AI-assisted debugging prototype for **semiconductor verification simulation logs**.  
-It ingests large `.log` files, extracts structured failures, clusters similar issues, assigns **debug priority scores**, and provides **root-cause hints** plus an **interactive dashboard**.
+**DebugIQ** is an AI-powered simulation log analysis system designed to automate debug prioritization during chip verification. The system ingests large simulation logs and intelligently processes them to extract structured information, clean and preprocess error messages, and apply AI-based analysis. It categorizes failures, detects duplicate errors, clusters similar issues, and analyzes their frequency and module impact. Using this information, the system ranks failures based on severity, frequency, and module importance to determine debugging priority. The analyzed data is stored in a structured database and presented through an interactive dashboard with visual insights such as module hotspots and failure timelines. The system also provides advanced capabilities like regression health scoring, known bug detection, failure signature generation, root cause suggestions, and a debug recommendation engine. Finally, DebugIQ generates automated reports that help engineers quickly understand critical issues and focus on fixing the most impactful bugs, significantly reducing manual debugging effort.
 
 ---
 
-## Features (High Level)
+## 🛠️ Workflow (Covering All 17 Features)
 
-- **Log ingestion** from `logs/` with **synthetic log generation** if empty.
-- **Regex parsing** of timestamp, severity, module, and message into a pandas DataFrame.
-- **Log preprocessing** and **failure signatures** to detect duplicates / known bugs.
-- **NLP classification** (TF‑IDF + Logistic Regression) into failure categories.
-- **Semantic clustering** using sentence-transformers + KMeans.
-- **Duplicate & frequency analysis**, **module hotspots**, and **regression health score**.
-- **Priority scoring system** that ranks failures for debugging.
-- **Known bug detection** via signature matching.
-- **Root cause suggestions & debug recommendations** by rule-based heuristics.
-- **SQLite storage** of all structured failures.
-- **Streamlit + Plotly dashboard** for interactive exploration.
-- **Text / Markdown debug reports** for sharing.
+1.  **Simulation Log Ingestion**: Collects raw simulation log files generated during verification runs.
+2.  **Intelligent Log Parsing**: Extracts timestamps, module names, severity levels, and error messages.
+3.  **Log Preprocessing**: Cleans and normalizes log data for further analysis.
+4.  **AI Failure Categorization**: Classifies failures (Assertion, Timeout, Protocol, Data Mismatch) using Machine Learning.
+5.  **Duplicate Failure Detection and Clustering**: Groups similar messages into unique failure clusters.
+6.  **Failure Frequency Analysis and Signature Generation**: Calculates occurrence rates and generates unique failure signatures.
+7.  **Debug Priority Ranking**: Ranks clusters based on severity, frequency, and module criticality.
+8.  **Module Hotspot Identification**: Highlights modules with high failure rates.
+9.  **Regression Health Score Calculation**: Evaluates the overall quality of the regression run.
+10. **Known Bug Detection**: Identifies recurring issues by comparing with stored failure data.
+11. **Failure Timeline Analysis**: Detects failure spikes and patterns over time.
+12. **Root Cause Suggestion**: Suggests possible causes based on patterns and categories.
+13. **Debug Recommendation Engine**: Provides actionable debugging steps.
+14. **Structured Failure Database Storage**: Stores all analyzed data in SQLite.
+15. **Interactive Debug Dashboard**: Visualizes processing results (10 Major Panels).
+16. **Automatic Debug Report Generation**: Exports summarized reports (TXT/MD).
+17. **Fast Log Processing Engine**: Efficiently processes large regression outputs.
 
 ---
 
-## Project Structure
+## 🚀 New Features (10 Major Panels)
+
+The dashboard has been enhanced with 10 specialized intelligence panels:
+
+1.  **Regression Overview**: Real-time metrics for health score, total, unique, and critical failures.
+2.  **Failure Priority Ranking**: Sortable ranking of failures using the DebugIQ Priority Score.
+3.  **Failure Category Distribution**: Visual breakdown of failure types (Assertion, Timeout, etc.).
+4.  **Failure Clusters**: Semantic grouping of similar log messages using Sentence-Transformers.
+5.  **Module Hotspot Analysis**: Identification of the most problematic RTL modules (e.g., CACHE_CTRL).
+6.  **Failure Timeline**: Chronological distribution of failures vs. priority.
+7.  **Root Cause Suggestions**: AI/Rule-based analysis of probable failure causes.
+8.  **Debug Recommendations**: Concrete, actionable steps for developers based on context.
+9.  **Known Bug Detection**: Highlighting failures that match previously identified signatures.
+10. **Debug Report Download**: Facility to export analysis results in Text and Markdown formats.
+
+---
+
+## 🏗️ Technical Architecture
+
+DebugIQ now follows a modern full-stack architecture:
+- **Core Engine**: Python-based NLP and analysis pipeline.
+- **Backend API**: Flask serving structured JSON data and reports.
+- **Frontend**: React (Vite) with Recharts for high-performance visualization.
+- **Database**: SQLite for persistent storage of enriched failure data.
+
+---
+
+## 📁 Project Structure
 
 ```text
 debugiq/
-├── logs/                  # Raw simulation logs (auto-filled with synthetic logs if empty)
+├── frontend/              # React (Vite) Application
+│   ├── src/App.jsx        # Main Dashboard UI (10 Panels)
+│   └── src/index.css      # Custom styling
+├── logs/                  # Raw simulation logs (auto-generated if empty)
 ├── data/                  # SQLite DB + generated reports
-├── parser.py              # Ingestion + regex parsing
-├── preprocess.py          # Message cleaning + failure signatures
-├── classifier.py          # TF-IDF + Logistic Regression categorizer
-├── clustering.py          # Sentence-transformers embeddings + KMeans clustering
-├── ranking.py             # Priority scoring, frequency, cluster size, module criticality
-├── analysis.py            # Frequency, hotspots, regression health, summary
-├── database.py            # SQLite schema + read/write
-├── recommendations.py     # Root-cause suggestions + debug actions
-├── report_generator.py    # Text + Markdown report generation
-├── dashboard.py           # Streamlit + Plotly interactive dashboard
-├── main.py                # Orchestration pipeline entrypoint
-└── requirements.txt
+├── api.py                 # Flask Backend API
+├── main.py                # Analysis Pipeline Entrypoint
+├── parser.py              # Log Ingestion & Parsing
+├── classifier.py          # TF-IDF + Logistic Regression
+├── clustering.py          # Semantic KMeans Clustering
+└── database.py            # SQLite Schema & Operations
 ```
 
 ---
 
-## Setup
+## 🛠️ Setup & Execution
 
-From the project root:
-
+### 1. Install Dependencies
+Ensure you have Python and Node.js installed.
 ```bash
-python -m venv venv
-source venv/bin/activate          # macOS / Linux
-# or: venv\Scripts\activate       # Windows
-
-pip install --upgrade pip
+# Python dependencies
 pip install -r requirements.txt
+pip install flask flask-cors
+
+# Frontend dependencies
+cd frontend
+npm install
 ```
 
-> If you prefer manual installs, ensure at least:
-> `pandas`, `scikit-learn`, `sentence-transformers`, `streamlit`, `plotly`, `regex`, `torch`.
-
----
-
-## End-to-End Workflow
-
-### 1. Run the Analysis Pipeline
-
+### 2. Run the Analysis Pipeline
+Extract and analyze log data first:
 ```bash
 python main.py
 ```
 
-**What happens:**
+### 3. Start the Dashboard
+You need to run both the API and the Frontend:
 
-1. **Log ingestion & synthetic generation** (`parser.ingest_and_parse`)
-   - Reads all `.log` files under `logs/`.
-   - If `logs/` is empty, `parser.generate_synthetic_logs` auto-creates realistic simulation logs with `INFO`, `WARNING`, `ERROR`, `FATAL` messages across modules like `CACHE_CTRL`, `MEMORY_CTRL`, `ALU`, `AXI_INTERFACE`.
-
-2. **Regex parsing into DataFrame** (`parser.parse_logs_to_df`)
-   - Extracts:
-     - `timestamp`
-     - `severity`
-     - `module`
-     - `message`
-   - Produces a structured pandas DataFrame with `timestamp_parsed` as a helper time column.
-
-3. **Preprocessing & failure signatures** (`preprocess.preprocess_logs`)
-   - Normalizes `message`:
-     - lowercasing
-     - removing numbers
-     - removing noise words
-     - basic token cleanup
-   - Stores result as `normalized_message`.
-   - Generates deterministic `failure_signature` per normalized message (hash-based) to identify duplicates and known bugs.
-
-4. **NLP-based failure categorization** (`classifier.categorize_failures`)
-   - Uses TF‑IDF + Logistic Regression trained on a small heuristic dataset.
-   - Classifies failures into:
-     - `assertion failure`
-     - `timeout error`
-     - `protocol violation`
-     - `data mismatch`
-     - `memory error`
-     - `unknown`
-   - Output stored in `category`.
-
-5. **Semantic failure clustering** (`clustering.add_clusters`)
-   - Encodes `normalized_message` using a **sentence-transformers** model (default `all-MiniLM-L6-v2`).
-   - Clusters the embedding vectors using **KMeans**.
-   - Adds `cluster_id` to each failure so similar issues share a cluster.
-
-6. **Priority scoring & frequency** (`ranking.compute_priority_scores`)
-   - Computes:
-     - `frequency`: number of occurrences per `failure_signature` (duplicate detection).
-     - `cluster_size`: number of items per `cluster_id`.
-     - `severity_score`: maps severity (`INFO`/`WARNING`/`ERROR`/`FATAL`) to numeric value.
-     - `module_criticality`: configurable importance per module.
-   - Calculates a **debug priority score**:
-     \[
-     \text{priority} = 0.4\cdot \text{severity\_score} +
-                       0.3\cdot \log(\text{frequency}+1) +
-                       0.2\cdot \text{cluster\_size} +
-                       0.1\cdot \text{module\_criticality}
-     \]
-   - Sorts rows by `priority_score` (highest first) so you know what to debug first.
-
-7. **Known bug detection** (`main.apply_known_bug_flags`)
-   - Maintains a set `KNOWN_BUG_SIGNATURES` (signatures of known issues).
-   - Sets `known_bug_flag` = 1 if a failure’s `failure_signature` is in that set.
-   - Currently provided as a hook for you to populate with real signatures.
-
-8. **Root-cause and debug recommendations** (`recommendations.add_recommendations`)
-   - Adds:
-     - `root_cause_suggestion`: rule-based explanation (e.g., timeout, protocol violation, data mismatch).
-     - `debug_actions`: recommended steps (inspect handshakes, verify assertions, check memory transactions, etc.).
-
-9. **Database storage (SQLite)** (`database.write_failures`)
-   - Writes all enriched failures into `data/debugiq.db` table `failures` with fields:
-     - `id` (auto)
-     - `timestamp`
-     - `module`
-     - `severity`
-     - `category`
-     - `message`
-     - `cluster_id`
-     - `failure_signature`
-     - `frequency`
-     - `priority_score`
-     - `known_bug_flag`
-
-10. **Regression health score & summary** (`analysis.summarize_for_report`)
-    - Computes:
-      - total failures
-      - unique failures
-      - most frequent bug
-      - highest priority bug
-      - module hotspots
-      - severity distribution
-      - **regression health score** (0–100) based on counts, severity mix, and cluster diversity.
-
-11. **Report generation** (`report_generator.save_report`)
-    - Produces:
-      - `data/debug_report.txt`
-      - `data/debug_report.md`
-    - Reports contain:
-      - total + unique failures
-      - most frequent bug
-      - highest priority bug
-      - problematic modules
-      - regression health score
-
-At the end of `python main.py` you should see a short console summary and be able to inspect the DB and reports under `data/`.
-
----
-
-## Interactive Dashboard
-
-After running `python main.py`, start the dashboard:
-
+**Terminal 1 (Backend API):**
 ```bash
-streamlit run dashboard.py
+python api.py
 ```
 
-**What the dashboard shows (from SQLite data):**
+**Terminal 2 (React Frontend):**
+```bash
+cd frontend
+npm run dev
+```
 
-1. **Regression health score card**
-   - Top-level health metric (0–100).
-
-2. **Failure category distribution**
-   - Pie chart of categories (assertion / timeout / protocol / data mismatch / memory / unknown).
-
-3. **Module hotspot bar chart**
-   - Failures per module to highlight problematic blocks like `CACHE_CTRL`, `MEMORY_CTRL`, `AXI_INTERFACE`.
-
-4. **Top priority failures table**
-   - Sorted by `priority_score` with severity, module, category, frequency, cluster, and known bug flag.
-
-5. **Failure timeline chart**
-   - Scatter plot over `timestamp_parsed` vs. `priority_score` with color by severity.
-
-6. **Cluster visualization**
-   - Scatter of clusters (cluster size vs. average priority) to see dominant failure families.
-
-7. **Known bugs list**
-   - Table of failures where `known_bug_flag == 1` if you populate known signatures.
-
-This dashboard provides a **debugging cockpit**: you can quickly see regression health, hotspots, and the most impactful failures to work on.
+The dashboard will be available at **http://localhost:3000**.
 
 ---
 
-## Customizing for Your Environment
+## 🔍 Log Format
+DebugIQ expects logs in the following format:
+`[TIME:<timestamp>] [<severity>] [<module>] <message>`
 
-- **Plug in real logs**: Drop your real simulator logs into `logs/` with a similar line format to the synthetic examples.  
-- **Tune module criticality**: Edit `MODULE_CRITICALITY` in `ranking.py` to reflect your design’s critical paths.  
-- **Register known bugs**: Populate `KNOWN_BUG_SIGNATURES` in `main.py` with signatures of bugs you’ve already root-caused.  
-- **Extend NLP / LLM**: Replace or augment `recommendations.suggest_root_cause` with an LLM call using your OpenAI-compatible endpoint if desired.
+*Example:*
+`[TIME:12500ns] [ERROR] [CACHE_CTRL] Assertion failed: cache_hit_on_invalid_line`
 
-This setup is intended as a **hackathon-friendly, locally runnable prototype** that still follows a clean, modular, production-style architecture.
+---
+
+## 📈 Debug Priority Scoring
+Priority is calculated using a weighted formula:
+\[
+\text{priority} = 0.4\cdot \text{severity} + 0.3\cdot \log(\text{freq}) + 0.2\cdot \text{cluster\_size} + 0.1\cdot \text{module\_crit}
+\]
 

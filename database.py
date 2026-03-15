@@ -25,7 +25,9 @@ def init_db(db_path: Path = DB_PATH) -> None:
                 failure_signature TEXT,
                 frequency INTEGER,
                 priority_score REAL,
-                known_bug_flag INTEGER
+                known_bug_flag INTEGER,
+                root_cause_suggestion TEXT,
+                debug_actions TEXT
             )
             """
         )
@@ -47,6 +49,8 @@ def write_failures(df: pd.DataFrame, db_path: Path = DB_PATH) -> None:
         "frequency",
         "priority_score",
         "known_bug_flag",
+        "root_cause_suggestion",
+        "debug_actions",
     ]
     records = df[cols].copy()
     with sqlite3.connect(db_path) as conn:

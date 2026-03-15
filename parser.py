@@ -37,7 +37,7 @@ def generate_synthetic_logs(log_dir: Path, num_files: int = 5, lines_per_file: i
         with file_path.open("w") as f:
             current_time = base_time
             for _ in range(lines_per_file):
-                current_time += timedelta(nanoseconds=100)
+                current_time += timedelta(microseconds=1)
                 ts_str = f"{int((current_time - base_time).total_seconds() * 1e9)}ns"
                 severity = random.choices(
                     SEVERITIES, weights=[0.6, 0.15, 0.2, 0.05], k=1
