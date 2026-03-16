@@ -110,6 +110,25 @@ The dashboard will be available at **http://localhost:3000**.
 
 ---
 
+## 🐳 Docker (Full Stack)
+
+Build and run both backend and frontend with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Services:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
+
+To stop:
+```bash
+docker compose down
+```
+
+---
+
 ## 🔍 Log Format
 DebugIQ expects logs in the following format:
 `[TIME:<timestamp>] [<severity>] [<module>] <message>`
