@@ -17,6 +17,65 @@ const SEVERITY_COLORS = {
   INFO: '#58a6ff'
 };
 
+const MOCK_FAILURES = [
+  {
+    timestamp: "12500ns",
+    timestamp_parsed: "2026-03-16T09:30:00Z",
+    module: "CACHE_CTRL",
+    severity: "ERROR",
+    category: "Assertion",
+    message: "Assertion failed: cache_hit_on_invalid_line",
+    cluster_id: 1,
+    failure_signature: "CACHE_ASSERT_001",
+    frequency: 14,
+    priority_score: 8.7,
+    known_bug_flag: 1,
+    root_cause_suggestion: "Likely stale tag handling in invalidation path.",
+    debug_actions: "Inspect invalidation FSM and tag compare gating."
+  },
+  {
+    timestamp: "13000ns",
+    timestamp_parsed: "2026-03-16T09:30:10Z",
+    module: "AXI_IF",
+    severity: "WARNING",
+    category: "Protocol",
+    message: "AXI timeout waiting for BVALID",
+    cluster_id: 2,
+    failure_signature: "AXI_TIMEOUT_002",
+    frequency: 7,
+    priority_score: 6.3,
+    known_bug_flag: 0,
+    root_cause_suggestion: "Backpressure not released during burst teardown.",
+    debug_actions: "Check outstanding transaction counters and reset paths."
+  },
+  {
+    timestamp: "14500ns",
+    timestamp_parsed: "2026-03-16T09:30:25Z",
+    module: "MMU",
+    severity: "FATAL",
+    category: "Data Mismatch",
+    message: "TLB mismatch on page table walk",
+    cluster_id: 3,
+    failure_signature: "MMU_TLB_003",
+    frequency: 3,
+    priority_score: 9.4,
+    known_bug_flag: 0,
+    root_cause_suggestion: "Race between refill and invalidate paths.",
+    debug_actions: "Trace TLB refill vs invalidate ordering."
+  }
+];
+
+const MOCK_SUMMARY = {
+  total_failures: 24,
+  unique_failures: 3,
+  regression_health_score: 72,
+  problematic_modules: [
+    { module: "CACHE_CTRL", failures: 14 },
+    { module: "AXI_IF", failures: 7 },
+    { module: "MMU", failures: 3 }
+  ]
+};
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const api = axios.create({
   baseURL: API_BASE_URL
@@ -27,6 +86,7 @@ function App() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [demoMode, setDemoMode] = useState(false);
   const [selectedFailureId, setSelectedFailureId] = useState(null);
   const [topN, setTopN] = useState(15);
 
@@ -48,13 +108,16 @@ function App() {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching data:", err);
-      setError("API unavailable. Set VITE_API_BASE_URL to your deployed backend.");
+      setDemoMode(true);
+      setFailures(MOCK_FAILURES);
+      setSummary(MOCK_SUMMARY);
+      setSelectedFailureId(0);
+      setError("Backend unavailable. Showing demo data.");
       setLoading(false);
     }
   };
 
   if (loading) return <div className="loading">Loading DebugIQ Dashboard...</div>;
-  if (error) return <div className="no-data">{error}</div>;
   if (!failures.length) return <div className="no-data">No failures found. Run the analysis pipeline first.</div>;
 
   const selectedFailure = failures[selectedFailureId] || failures[0];
@@ -95,6 +158,7 @@ function App() {
       {/* 10. Sidebar: Debug Report Download */}
       <aside className="sidebar">
         <h2>DebugIQ</h2>
+        {demoMode && <div className="demo-banner">Demo mode</div>}
         <div className="sidebar-section">
           <h3>Reports</h3>
           <a href={`${API_BASE_URL}/api/report/debug_report.txt`} className="download-btn">
