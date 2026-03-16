@@ -122,9 +122,43 @@ Services:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
 
+### Frontend API Base URL (Deployments)
+For hosted frontend (e.g., Vercel), set:
+```
+VITE_API_BASE_URL=https://your-backend.example.com
+```
+If unset, the frontend uses same-origin `/api` (works with Docker + nginx).
+
 To stop:
 ```bash
 docker compose down
+```
+
+---
+
+## 🚀 Deployment (Vercel + Backend Host)
+
+### 1) Deploy Backend (Docker)
+Build and run the backend container on any Docker host:
+```bash
+docker build -f Dockerfile.backend -t debuqi-backend .
+docker run -d -p 5000:5000 --name debuqi-backend debuqi-backend
+```
+Then run the analysis pipeline once to populate the DB:
+```bash
+python main.py
+```
+
+### 2) Deploy Frontend (Vercel)
+In Vercel Project Settings:
+- Root Directory: `frontend/`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Env Var: `VITE_API_BASE_URL=https://your-backend.example.com`
+
+Alternatively, keep frontend calling `/api` and add a Vercel rewrite:
+```
+API_BASE_URL=https://your-backend.example.com
 ```
 
 ---

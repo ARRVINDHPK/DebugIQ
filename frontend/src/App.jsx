@@ -17,10 +17,16 @@ const SEVERITY_COLORS = {
   INFO: '#58a6ff'
 };
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const api = axios.create({
+  baseURL: API_BASE_URL
+});
+
 function App() {
   const [failures, setFailures] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedFailureId, setSelectedFailureId] = useState(null);
   const [topN, setTopN] = useState(15);
 
@@ -31,8 +37,8 @@ function App() {
   const fetchData = async () => {
     try {
       const [fRes, sRes] = await Promise.all([
-        axios.get('/api/failures'),
-        axios.get('/api/summary')
+        api.get('/api/failures'),
+        api.get('/api/summary')
       ]);
       setFailures(fRes.data);
       setSummary(sRes.data);
@@ -42,11 +48,13 @@ function App() {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching data:", err);
+      setError("API unavailable. Set VITE_API_BASE_URL to your deployed backend.");
       setLoading(false);
     }
   };
 
   if (loading) return <div className="loading">Loading DebugIQ Dashboard...</div>;
+  if (error) return <div className="no-data">{error}</div>;
   if (!failures.length) return <div className="no-data">No failures found. Run the analysis pipeline first.</div>;
 
   const selectedFailure = failures[selectedFailureId] || failures[0];
@@ -89,11 +97,11 @@ function App() {
         <h2>DebugIQ</h2>
         <div className="sidebar-section">
           <h3>Reports</h3>
-          <a href="http://localhost:5000/api/report/debug_report.txt" className="download-btn">
+          <a href={`${API_BASE_URL}/api/report/debug_report.txt`} className="download-btn">
             <Download size={16} style={{marginRight: '8px'}} />
             Text Report
           </a>
-          <a href="http://localhost:5000/api/report/debug_report.md" className="download-btn">
+          <a href={`${API_BASE_URL}/api/report/debug_report.md`} className="download-btn">
             <Download size={16} style={{marginRight: '8px'}} />
             Markdown Report
           </a>
